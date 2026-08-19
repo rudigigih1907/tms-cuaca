@@ -24,7 +24,7 @@ $config = [
     'components' => [
         'request' => [
             // !!! insert a secret key in the following (if it is empty) - this is required by cookie validation
-            'cookieValidationKey' => 'rTz38N4TwutM0p8_bCZC3N-v6NrJKU4H',
+            'cookieValidationKey' => $_ENV['APP_COOKIE_VALIDATION_KEY'],
         ],
         'cache' => [
             'class' => \yii\caching\FileCache::class,
@@ -47,14 +47,20 @@ $config = [
             ],
         ],
         'db' => $db,
-        /*
         'urlManager' => [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
-            'rules' => [
-            ],
+            'rules' => [],
         ],
-        */
+        // Set zona waktu untuk Formatter Yii2
+        'formatter' => [
+            'class' => 'yii\i18n\Formatter',
+            'dateFormat' => $_ENV['DATEFORMAT'],
+            'datetimeFormat' => $_ENV['DATETIMEFORMAT'],
+            'timeFormat' => $_ENV['TIMEFORMAT'],
+            'defaultTimeZone' => $_ENV['DEFAULTTIMEZONE'], // Zona waktu input/database
+            'timeZone' => $_ENV['TIMEZONE'],       // Zona waktu tampilan
+        ],
     ],
     'params' => $params,
 ];
