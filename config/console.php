@@ -26,8 +26,17 @@ $config = [
             ],
         ],
         'db' => $db,
+        'formatter' => [
+            'class' => 'yii\i18n\Formatter',
+            'dateFormat' => $_ENV['DATEFORMAT'],
+            'datetimeFormat' => $_ENV['DATETIMEFORMAT'],
+            'timeFormat' => $_ENV['TIMEFORMAT'],
+            'defaultTimeZone' => $_ENV['DEFAULTTIMEZONE'], // Zona waktu input/database
+            'timeZone' => $_ENV['TIMEZONE'],       // Zona waktu tampilan
+        ],
     ],
     'params' => $params,
+    'timeZone' => 'Asia/Jakarta',
     /*
     'controllerMap' => [
         'fixture' => [ // Fixture generation command line.

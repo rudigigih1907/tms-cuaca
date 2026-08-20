@@ -63,6 +63,7 @@ $config = [
         ],
     ],
     'params' => $params,
+    'timeZone' => 'Asia/Jakarta'
 ];
 
 if (YII_ENV_DEV) {
