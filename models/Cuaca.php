@@ -3,6 +3,8 @@
 namespace app\models;
 
 use Yii;
+use yii\behaviors\TimestampBehavior;
+use yii\db\ActiveRecord;
 
 /**
  * This is the model class for table "cuaca".
@@ -29,6 +31,20 @@ class Cuaca extends \yii\db\ActiveRecord
     {
         return 'cuaca';
     }
+
+    public function behaviors(): array
+{
+    return [
+        [
+            'class' => TimestampBehavior::class,
+            'attributes' => [
+                ActiveRecord::EVENT_BEFORE_INSERT => ['created_at'],
+            ],
+            // Gunakan format DATETIME Asia/Jakarta
+            'value' => date('Y-m-d H:i:s'),
+        ],
+    ];
+}
 
     /**
      * {@inheritdoc}
