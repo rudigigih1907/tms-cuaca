@@ -49,5 +49,29 @@ services:
       - "8081:80"
     environment:
       PMA_HOST: db
+
+  scheduler:
+    image: mcuadros/ofelia:latest
+    container_name: ${SCHEDULER_CONTAINER_NAME}
+    restart: unless-stopped
+    depends_on:
+      - app
+    # Mengizinkan Ofelia berkomunikasi dengan Docker Socket
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ./runtime/logs:/etc/ofelia/logs
+    environment:
+      - TZ=Asia/Jakarta
+    command: daemon --docker
+    labels:
+      # Job 1: Sync BMKG Jakarta Utara 
+      ofelia.job-exec.sync_jakut.schedule: "0 10 0 * * *" # otomatis setiap hari jam 00:10
+      ofelia.job-exec.sync_jakut.container: ${APP_NAME}
+      ofelia.job-exec.sync_jakut.command: "php yii cuaca/sync-jakut"
+      # (Opsional) Kirim log output jika terjadi error
+      ofelia.job-exec.sync_jakut.no-overlap: "true"
+      ofelia.job-exec.sync_jakut.save-folder: "/etc/ofelia/logs"
 volumes:
   db_data:
