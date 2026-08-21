@@ -102,7 +102,7 @@ $kelurahanId = $kelurahanId ?? null;
 
             <?= Html::endForm() ?>
 
-            <!-- INFORMASI KODE WILAYAH TERPILIH & TOMBOL SYNC -->
+            <!-- INFORMASI & TOMBOL SYNC / CETAK PDF -->
             <?php if (!empty($kelurahanId)): ?>
                 <hr>
                 <div class="d-flex justify-content-between align-items-center">
@@ -112,12 +112,28 @@ $kelurahanId = $kelurahanId ?? null;
                         <span class="ms-2 text-muted">(<?= Html::encode($listKelurahan[$kelurahanId] ?? '') ?>)</span>
                     </div>
 
-                    <?= Html::beginForm(['cuaca/sync'], 'post', ['data-pjax' => true]) ?>
-                    <?= Html::hiddenInput('adm4', $kelurahanId) ?>
-                    <?= Html::submitButton('<i class="bi bi-cloud-download"></i> Tarik / Update Data BMKG', [
-                        'class' => 'btn btn-success',
-                    ]) ?>
-                    <?= Html::endForm() ?>
+                    <div class="d-flex gap-2">
+                        <!-- TOMBOL CETAK PDF (Hanya aktif jika tanggal spesifik dipilih) -->
+                        <?php if (!empty($tanggal)): ?>
+                            <?= Html::a('Cetak Laporan PDF', [
+                                'cuaca/export-pdf',
+                                'kelurahan_id' => $kelurahanId,
+                                'tanggal' => $tanggal
+                            ], [
+                                'class' => 'btn btn-danger',
+                                'target' => '_blank',
+                                'data-pjax' => '0', // PERINGATAN: Harus '0' agar Pjax tidak mencegat proses download PDF
+                            ]) ?>
+                        <?php endif; ?>
+
+                        <!-- TOMBOL TARIK DATA BMKG -->
+                        <?= Html::beginForm(['cuaca/sync'], 'post', ['data-pjax' => true, 'class' => 'd-inline']) ?>
+                        <?= Html::hiddenInput('adm4', $kelurahanId) ?>
+                        <?= Html::submitButton('Tarik Data BMKG', [
+                            'class' => 'btn btn-success',
+                        ]) ?>
+                        <?= Html::endForm() ?>
+                    </div>
                 </div>
             <?php endif; ?>
         </div>
