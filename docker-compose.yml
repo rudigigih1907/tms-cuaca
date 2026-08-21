@@ -5,53 +5,62 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: ${APP_NAME}
+    restart: always
     environment:
-      - DB_HOST=${DB_HOST}
-      - DB_NAME=${DB_NAME}
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
-      - TZ=Asia/Jakarta
+      - TZ=${TIMEZONE}
     volumes:
-      - .:/app
-    depends_on:
-      - db
+      - .:/var/www/html
+    # Perintah di bawah ini memastikan izin folder diperbaiki setiap kali container start
+    entrypoint: >
+      sh -c "chown -R www-data:www-data /var/www/html/runtime /var/www/html/web/assets && docker-php-entrypoint php-fpm"
+    networks:
+      - yii2_network
 
   # Layanan Database (MySQL)
   db:
-    image: mysql:8.0
+    image: mysql:8.4
     container_name: ${DB_CONTAINER_NAME}
+    restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PASSWORD}
+      TZ: ${TIMEZONE}
     ports:
-      - "3307:3306"
+      - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
+    networks:
+      - yii2_network
 
   # Layanan Web Server (Nginx)
-  web:
+  nginx:
     image: nginx:alpine
-    container_name: ${WEB_CONTAINER_NAME}
+    container_name: ${NGINX_CONTAINER_NAME}
+    restart: always
     ports:
-      - "8080:80" # Nginx keeps standard web port
+      - "8080:80"
     volumes:
-      - .:/app
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - .:/var/www/html
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - app
-  phpmyadmin:
-    image: phpmyadmin:5.2
-    container_name: ${PHPMYADMIN_CONTAINER_NAME}
+    networks:
+      - yii2_network
+  adminer:
+    image: adminer:6.0.1
+    container_name: ${ADMINER_CONTAINER_NAME}
+    restart: always
     ports:
-      - "8081:80"
+      - "8081:8080" # Akses lewat browser di port 8081
     environment:
-      PMA_HOST: db
+      ADMINER_DESIGN: nesta # Tema gelap/modern ala VS Code
+    networks:
+      - yii2_network
 
   scheduler:
-    image: mcuadros/ofelia:latest
+    image: mcuadros/ofelia:0.3
     container_name: ${SCHEDULER_CONTAINER_NAME}
     restart: unless-stopped
     depends_on:
@@ -63,8 +72,10 @@ services:
       - /etc/timezone:/etc/timezone:ro
       - ./runtime/logs:/etc/ofelia/logs
     environment:
-      - TZ=Asia/Jakarta
+      - TZ=${TIMEZONE}
     command: daemon --docker
+    networks:
+      - yii2_network
     labels:
       # Job 1: Sync BMKG Jakarta Utara 
       ofelia.job-exec.sync_jakut.schedule: "0 10 0 * * *" # otomatis setiap hari jam 00:10
@@ -73,5 +84,10 @@ services:
       # (Opsional) Kirim log output jika terjadi error
       ofelia.job-exec.sync_jakut.no-overlap: "true"
       ofelia.job-exec.sync_jakut.save-folder: "/etc/ofelia/logs"
+
+networks:
+  yii2_network:
+    driver: bridge
+
 volumes:
   db_data:

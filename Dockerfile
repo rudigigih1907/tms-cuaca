@@ -1,17 +1,42 @@
-FROM php:8.2-fpm-alpine
+FROM php:8.3-fpm-alpine
 
-# Instal sistem dependensi dan ekstensi PHP yang dibutuhkan Yii2
+# Instal dependensi sistem dan ekstensi PHP yang dibutuhkan Yii2
 RUN apk add --no-cache \
     bash \
-    freetype-dev \
-    libjpeg-turbo-dev \
+    git \
+    curl \
+    tzdata \
     libpng-dev \
+    libjpeg-turbo-dev \
+    libwebp-dev \
+    freetype-dev \
     libzip-dev \
+    zip \
+    unzip \
     icu-dev \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) gd pdo_mysql zip intl
+    oniguruma-dev
 
-# Instal Composer
+# Konfigurasi dan instal ekstensi PHP (gd, pdo_mysql, intl, zip, mbstring)
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+    && docker-php-ext-install -j$(nproc) \
+    gd \
+    pdo_mysql \
+    intl \
+    zip \
+    mbstring
+
+# Instal Composer secara global
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-WORKDIR /app
+# Tentukan working directory di dalam container
+WORKDIR /var/www/html
+
+# Salin source code aplikasi ke dalam container
+COPY . .
+
+# Atur izin akses untuk folder runtime dan assets agar bisa ditulis oleh web server
+RUN chown -R www-data:www-data /var/www/html
+
+EXPOSE 9000
+
+CMD ["php-fpm"]
