@@ -3,11 +3,13 @@
 namespace app\controllers;
 
 use app\models\Cuaca;
+use app\models\CuacaGambar;
 use app\models\Wilayah;
 use kartik\mpdf\Pdf;
 use Yii;
 use yii\data\ActiveDataProvider;
 use yii\web\NotFoundHttpException;
+use yii\web\UploadedFile;
 
 class CuacaController extends \yii\web\Controller
 {
@@ -160,5 +162,79 @@ class CuacaController extends \yii\web\Controller
         ]);
 
         return $pdf->render();
+    }
+
+    /**
+     * Halaman View Terpisah untuk Menampilkan Galeri Gambar
+     */
+    public function actionView(int $id): string
+    {
+        $model = $this->findModel($id);
+
+        return $this->render('view', [
+            'model' => $model,
+        ]);
+    }
+
+    /**
+     * Upload Gambar dari Halaman View Detail
+     */
+    public function actionUploadDetail(int $id): \yii\web\Response
+    {
+        $model = $this->findModel($id);
+
+        if (Yii::$app->request->isPost) {
+            $model->imageFiles = UploadedFile::getInstances($model, 'imageFiles');
+            if ($model->imageFiles && $model->uploadMultiple()) {
+                Yii::$app->session->setFlash('success', 'Gambar berhasil ditambahkan.');
+            } else {
+                Yii::$app->session->setFlash('error', 'Gagal mengunggah gambar.');
+            }
+        }
+
+        return $this->redirect(['view', 'id' => $id]);
+    }
+
+    public function actionUpload(int $id): \yii\web\Response
+    {
+        $model = $this->findModel($id);
+
+        if (Yii::$app->request->isPost) {
+            // Ambil semua file yang diupload (multiple)
+            $model->imageFiles = UploadedFile::getInstances($model, 'imageFiles');
+            if ($model->imageFiles && $model->uploadMultiple()) {
+                Yii::$app->session->setFlash('success', 'Beberapa gambar berhasil diunggah.');
+            } else {
+                Yii::$app->session->setFlash('error', 'Gagal mengunggah gambar.');
+            }
+        }
+
+        return $this->redirect(['index', 'adm4' => $model->kode_adm4]);
+    }
+
+    // Action untuk menghapus 1 foto spesifik dari galeri
+    public function actionDeleteGambar(int $id): \yii\web\Response
+    {
+        $gambar = CuacaGambar::findOne($id);
+        if ($gambar) {
+            $cuaca = Cuaca::findOne($gambar->cuaca_id);
+            $filePath = Yii::getAlias('@webroot/uploads/cuaca/') . $gambar->file_name;
+            if (file_exists($filePath)) {
+                @unlink($filePath);
+            }
+            $gambar->delete();
+            Yii::$app->session->setFlash('success', 'Gambar berhasil dihapus.');
+            return $this->redirect(['index', 'adm4' => $cuaca->kode_adm4 ?? null]);
+        }
+
+        return $this->redirect(['index']);
+    }
+
+    protected function findModel(int $id): Cuaca
+    {
+        if (($model = Cuaca::findOne($id)) !== null) {
+            return $model;
+        }
+        throw new NotFoundHttpException('Data tidak ditemukan.');
     }
 }
