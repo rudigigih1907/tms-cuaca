@@ -22,7 +22,8 @@ use yii\db\ActiveRecord;
  */
 class Cuaca extends \yii\db\ActiveRecord
 {
-
+    /** @var UploadedFile[] */
+    public $imageFiles;
 
     /**
      * {@inheritdoc}
@@ -33,18 +34,18 @@ class Cuaca extends \yii\db\ActiveRecord
     }
 
     public function behaviors(): array
-{
-    return [
-        [
-            'class' => TimestampBehavior::class,
-            'attributes' => [
-                ActiveRecord::EVENT_BEFORE_INSERT => ['created_at'],
+    {
+        return [
+            [
+                'class' => TimestampBehavior::class,
+                'attributes' => [
+                    ActiveRecord::EVENT_BEFORE_INSERT => ['created_at'],
+                ],
+                // Gunakan format DATETIME Asia/Jakarta
+                'value' => date('Y-m-d H:i:s'),
             ],
-            // Gunakan format DATETIME Asia/Jakarta
-            'value' => date('Y-m-d H:i:s'),
-        ],
-    ];
-}
+        ];
+    }
 
     /**
      * {@inheritdoc}
@@ -61,6 +62,7 @@ class Cuaca extends \yii\db\ActiveRecord
             [['kondisi_cuaca'], 'string', 'max' => 100],
             [['arah_angin'], 'string', 'max' => 50],
             [['kode_adm4', 'local_datetime'], 'unique', 'targetAttribute' => ['kode_adm4', 'local_datetime']],
+            [['imageFiles'], 'file', 'skipOnEmpty' => true, 'extensions' => 'png, jpg, jpeg, webp', 'maxFiles' => 5, 'maxSize' => 1024 * 1024 * 2],
         ];
     }
 
@@ -156,5 +158,33 @@ class Cuaca extends \yii\db\ActiveRecord
         } catch (\Exception $e) {
             return ['success' => false, 'message' => 'Terjadi kesalahan: ' . $e->getMessage()];
         }
+    }
+
+    // Relasi One-to-Many ke tabel CuacaGambar
+    public function getGaleri(): \yii\db\ActiveQuery
+    {
+        return $this->hasMany(CuacaGambar::class, ['cuaca_id' => 'id']);
+    }
+
+    public function uploadMultiple(): bool
+    {
+        if ($this->validate() && !empty($this->imageFiles)) {
+            $dir = Yii::getAlias('@webroot/uploads/cuaca/');
+            if (!is_dir($dir)) {
+                mkdir($dir, 0777, true);
+            }
+
+            foreach ($this->imageFiles as $file) {
+                $fileName = 'cuaca_' . $this->id . '_' . time() . '_' . rand(100, 999) . '.' . $file->extension;
+                if ($file->saveAs($dir . $fileName)) {
+                    $gambar = new CuacaGambar();
+                    $gambar->cuaca_id = $this->id;
+                    $gambar->file_name = $fileName;
+                    $gambar->save();
+                }
+            }
+            return true;
+        }
+        return false;
     }
 }
