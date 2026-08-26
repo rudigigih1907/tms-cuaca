@@ -115,7 +115,7 @@ $kelurahanId = $kelurahanId ?? null;
                     <div class="d-flex gap-2">
                         <!-- TOMBOL CETAK PDF (Hanya aktif jika tanggal spesifik dipilih) -->
                         <?php if (!empty($tanggal)): ?>
-                            <?= Html::a('Cetak Laporan PDF', [
+                            <?= Html::a('<i class="bi bi-file-earmark-pdf"></i> Cetak Laporan PDF', [
                                 'cuaca/export-pdf',
                                 'kelurahan_id' => $kelurahanId,
                                 'tanggal' => $tanggal
@@ -129,7 +129,7 @@ $kelurahanId = $kelurahanId ?? null;
                         <!-- TOMBOL TARIK DATA BMKG -->
                         <?= Html::beginForm(['cuaca/sync'], 'post', ['data-pjax' => true, 'class' => 'd-inline']) ?>
                         <?= Html::hiddenInput('adm4', $kelurahanId) ?>
-                        <?= Html::submitButton('Tarik Data BMKG', [
+                        <?= Html::submitButton('<i class="bi bi-cloud-download"></i> Tarik Data BMKG', [
                             'class' => 'btn btn-success',
                         ]) ?>
                         <?= Html::endForm() ?>
@@ -202,6 +202,24 @@ $kelurahanId = $kelurahanId ?? null;
                         'attribute' => 'arah_angin',
                         'value' => fn($model) => $model->arah_angin ?? '-',
                         'contentOptions' => ['class' => 'text-center'],
+                    ],
+                    // KOLOM INDIKATOR JUMLAH GAMBAR & TOMBOL VIEW
+                    [
+                        'label' => 'Galeri Foto',
+                        'format' => 'raw',
+                        'headerOptions' => ['style' => 'width: 160px;', 'class' => 'text-center'],
+                        'contentOptions' => ['class' => 'text-center'],
+                        'value' => function ($model) {
+                            $total = count($model->galeri);
+                            $badge = $total > 0 
+                                ? '<span class="badge bg-success">' . $total . ' Foto</span>' 
+                                : '<span class="badge bg-secondary">Kosong</span>';
+
+                            return Html::a('<i class="bi bi-images"></i> Lihat Galeri ' . $badge, ['view', 'id' => $model->id], [
+                                'class' => 'btn btn-sm btn-outline-primary',
+                                'data-pjax' => '0', // Buka halaman baru tanpa Pjax grid
+                            ]);
+                        },
                     ],
                 ],
             ]); ?>
