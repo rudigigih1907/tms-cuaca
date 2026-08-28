@@ -17,10 +17,17 @@ class CuacaController extends \yii\web\Controller
     {
         $request = Yii::$app->request;
 
-        $provinsiId  = $request->get('provinsi_id');
-        $kabupatenId = $request->get('kabupaten_id');
-        $kecamatanId = $request->get('kecamatan_id');
-        $kelurahanId = $request->get('kelurahan_id');
+        // SET KODE DEFAULT JAKARTA UTARA (Sesuaikan dengan kode di DB Anda)
+        // DKI Jakarta = 31, Jakarta Utara = 31.72 / 3172, dst.
+        $defaultProvinsiId  = '31';        // DKI Jakarta
+        $defaultKabupatenId = '31.72';     // Kota Jakarta Utara
+        $defaultKecamatanId = '31.72.02';  // Tanjung Priok
+        $defaultKelurahanId = '31.72.02.1001'; // Tanjung Priok
+
+        $provinsiId  = $request->get('provinsi_id', $defaultProvinsiId);
+        $kabupatenId = $request->get('kabupaten_id', $defaultKabupatenId);
+        $kecamatanId = $request->get('kecamatan_id', $defaultKecamatanId);
+        $kelurahanId = $request->get('kelurahan_id', $defaultKelurahanId);
         $tanggal     = $request->get('tanggal');
 
         $listProvinsi  = Wilayah::getProvinsi();
@@ -58,7 +65,6 @@ class CuacaController extends \yii\web\Controller
             'listKabupaten' => $listKabupaten,
             'listKecamatan' => $listKecamatan,
             'listKelurahan' => $listKelurahan,
-            'tanggal'      => $tanggal,
         ]);
     }
 
