@@ -12,7 +12,6 @@ use yii\helpers\Html;
 /** @var array $listKabupaten */
 /** @var array $listKecamatan */
 /** @var array $listKelurahan */
-/** @var array $listTanggal */
 
 $provinsiId  = $provinsiId ?? null;
 $kabupatenId = $kabupatenId ?? null;
@@ -24,7 +23,6 @@ $listProvinsi  = $listProvinsi ?? [];
 $listKabupaten = $listKabupaten ?? [];
 $listKecamatan = $listKecamatan ?? [];
 $listKelurahan = $listKelurahan ?? [];
-$listTanggal   = $listTanggal ?? [];
 ?>
 <div class="card mb-4">
         <div class="card-header bg-primary text-white">
@@ -79,18 +77,6 @@ $listTanggal   = $listTanggal ?? [];
                         ]) ?>
                     </div>
                 <?php endif; ?>
-
-                <!-- DROPDOWN FILTER TANGGAL (Hanya muncul jika kelurahan sudah dipilih) -->
-                <?php if (!empty($kelurahanId)): ?>
-                    <div class="col-md-2">
-                        <label class="form-label font-weight-bold text-success">Pilih Tanggal</label>
-                        <?= Html::dropDownList('tanggal', $tanggal, $listTanggal ?? [], [
-                            'prompt' => '-- Semua Tanggal --',
-                            'class' => 'form-select form-control border-success',
-                            'onchange' => '$(this).closest("form").submit();'
-                        ]) ?>
-                    </div>
-                <?php endif; ?>
             </div>
 
             <?= Html::endForm() ?>
@@ -104,21 +90,7 @@ $listTanggal   = $listTanggal ?? [];
                         <span class="badge bg-info text-dark fs-6"><?= Html::encode($kelurahanId) ?></span>
                         <span class="ms-2 text-muted">(<?= Html::encode($listKelurahan[$kelurahanId] ?? '') ?>)</span>
                     </div>
-
                     <div class="d-flex gap-2">
-                        <!-- TOMBOL CETAK PDF (Hanya aktif jika tanggal spesifik dipilih) -->
-                        <?php if (!empty($tanggal)): ?>
-                            <?= Html::a('<i class="bi bi-file-earmark-pdf"></i> Cetak Laporan PDF', [
-                                'cuaca/export-pdf',
-                                'kelurahan_id' => $kelurahanId,
-                                'tanggal' => $tanggal
-                            ], [
-                                'class' => 'btn btn-danger',
-                                'target' => '_blank',
-                                'data-pjax' => '0', // PERINGATAN: Harus '0' agar Pjax tidak mencegat proses download PDF
-                            ]) ?>
-                        <?php endif; ?>
-
                         <!-- TOMBOL TARIK DATA BMKG -->
                         <?= Html::beginForm(['cuaca/sync'], 'post', ['data-pjax' => true, 'class' => 'd-inline']) ?>
                         <?= Html::hiddenInput('adm4', $kelurahanId) ?>

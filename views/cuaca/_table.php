@@ -1,96 +1,89 @@
 <?php
 
-use yii\grid\GridView;
+use app\assets\DataTableAsset;
 use yii\helpers\Html;
+use yii\helpers\Url;
+use yii\web\View;
 
 /** @var yii\web\View $this */
-/** @var yii\data\ActiveDataProvider $dataProvider */
+/** @var array $groupedDates */
 /** @var string|null $kelurahanId */
 
 $kelurahanId = $kelurahanId ?? null;
+$groupedDates = $groupedDates ?? [];
 ?>
 <div class="card card-default">
-    <div class="card-header">
-        <h3 class="card-title mb-0">Prakiraan Cuaca Tersimpan</h3>
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h3 class="card-title mb-0 fs-6">Prakiraan Cuaca</h3>
+        <?php if (!empty($groupedDates)): ?>
+            <span class="badge bg-light text-dark"><?= count($groupedDates) ?> Hari Terdata</span>
+        <?php endif; ?>
     </div>
     <div class="card-body">
-        <?= GridView::widget([
-            'dataProvider' => $dataProvider,
-            'tableOptions' => ['class' => 'table table-striped table-bordered align-middle'],
-            'emptyText' => empty($kelurahanId)
-                ? 'Silakan pilih Wilayah sampai tingkat Kelurahan/Desa di atas.'
-                : 'Belum ada data cuaca untuk wilayah ini. Silakan klik tombol "Tarik / Update Data BMKG".',
-            'pager' => [
-                'options' => ['class' => 'pagination pagination-sm justify-content-left my-3'],
-                'linkContainerOptions' => ['class' => 'page-item'],
-                'linkOptions' => ['class' => 'page-link'],
-                'disabledListItemSubTagOptions' => ['tag' => 'a', 'class' => 'page-link'],
-                'prevPageLabel' => '&laquo; Prev',
-                'nextPageLabel' => 'Next &raquo;',
-                'firstPageLabel' => 'First',
-                'lastPageLabel' => 'Last',
-                'maxButtonCount' => 5,
-            ],
-            'columns' => [
-                [
-                    'class' => 'yii\grid\SerialColumn',
-                    'header' => 'No',
-                    'headerOptions' => ['style' => 'width: 50px;', 'class' => 'text-center'],
-                    'contentOptions' => ['class' => 'text-center'],
-                ],
-                [
-                    'attribute' => 'local_datetime',
-                    'label' => 'Waktu Prakiraan',
-                    'value' => fn($model) => Yii::$app->formatter->asDatetime($model->local_datetime),
-                ],
-                [
-                    'attribute' => 'analysis_date',
-                    'label' => 'Analysis Date',
-                    'value' => fn($model) => Yii::$app->formatter->asDatetime($model->analysis_date),
-                ],
-                [
-                    'attribute' => 'kondisi_cuaca',
-                    'value' => fn($model) => $model->kondisi_cuaca ?? '-',
-                ],
-                [
-                    'attribute' => 'suhu',
-                    'value' => fn($model) => $model->suhu !== null ? $model->suhu . ' °C' : '-',
-                    'contentOptions' => ['class' => 'text-center'],
-                ],
-                [
-                    'attribute' => 'kelembapan',
-                    'value' => fn($model) => $model->kelembapan !== null ? $model->kelembapan . ' %' : '-',
-                    'contentOptions' => ['class' => 'text-center'],
-                ],
-                [
-                    'attribute' => 'kecepatan_angin',
-                    'value' => fn($model) => $model->kecepatan_angin !== null ? $model->kecepatan_angin . ' km/j' : '-',
-                    'contentOptions' => ['class' => 'text-center'],
-                ],
-                [
-                    'attribute' => 'arah_angin',
-                    'value' => fn($model) => $model->arah_angin ?? '-',
-                    'contentOptions' => ['class' => 'text-center'],
-                ],
-                // KOLOM INDIKATOR JUMLAH GAMBAR & TOMBOL VIEW
-                [
-                    'label' => 'Galeri Foto',
-                    'format' => 'raw',
-                    'headerOptions' => ['style' => 'width: 160px;', 'class' => 'text-center'],
-                    'contentOptions' => ['class' => 'text-center'],
-                    'value' => function ($model) {
-                        $total = count($model->galeri);
-                        $badge = $total > 0
-                            ? '<span class="badge bg-success">' . $total . ' Foto</span>'
-                            : '<span class="badge bg-secondary">Kosong</span>';
-
-                        return Html::a('<i class="bi bi-images"></i> Lihat Galeri ' . $badge, ['view', 'id' => $model->id], [
-                            'class' => 'btn btn-sm btn-outline-primary',
-                            'data-pjax' => '0', // Buka halaman baru tanpa Pjax grid
-                        ]);
-                    },
-                ],
-            ],
-        ]); ?>
+        <?php if (empty($kelurahanId)): ?>
+            <div class="p-4 text-center text-muted">
+                Silakan pilih Wilayah sampai tingkat Kelurahan/Desa di atas.
+            </div>
+        <?php elseif (empty($groupedDates)): ?>
+            <div class="p-4 text-center text-muted">
+                Belum ada data cuaca untuk wilayah ini. Silakan klik tombol <strong>"Tarik / Update Data BMKG"</strong>.
+            </div>
+        <?php else: ?>
+            <div class="table-responsive">
+                <table id="table-cuaca-group" class="table table-bordered table-striped align-middle w-100">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;" class="text-center">#</th>
+                            <th>Tanggal Prakiraan</th>
+                            <th class="text-center">Jumlah Jam Terdata</th>
+                            <th class="text-center" style="width: 120px;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($groupedDates as $idx => $row):
+                            $formattedDate = Yii::$app->formatter->asDate($row['tgl'], 'php:l, d F Y');
+                        ?>
+                            <tr data-tgl="<?= Html::encode($row['tgl']) ?>">
+                                <td class="text-center text-muted"><?= $idx + 1 ?></td>
+                                <td class="fw-bold">
+                                    <i class="bi bi-calendar-event me-2 text-primary"></i><?= $formattedDate ?>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-info text-dark"><?= $row['total_jam'] ?> Data Jam</span>
+                                </td>
+                                <td class="text-center">
+                                    <button type="button" class="btn btn-sm btn-outline-primary btn-expand-detail">
+                                        <i class="bi bi-plus-square-fill me-1"></i> Buka Detail
+                                    </button>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
     </div>
 </div>
+
+<?php
+// Register DataTables Asset
+DataTableAsset::register($this);
+
+// Parameter PHP yang dibutuhkan JS
+$ajaxDetailUrl = Url::to(['cuaca/get-detail-by-date']);
+$exportPdfBaseUrl = Url::to(['cuaca/export-pdf', 'kelurahan_id' => $kelurahanId]);
+
+$configJson = json_encode([
+    'ajaxDetailUrl' => $ajaxDetailUrl,
+    'kelurahanId' => $kelurahanId,
+    'exportPdfBaseUrl' => $exportPdfBaseUrl,
+]);
+
+// Daftarkan config di posisi POS_READY atau POS_HEAD agar selalu ter-update saat PJAX me-load _table.php
+$this->registerJs("window.cuacaConfig = {$configJson};", View::POS_READY);
+
+$this->registerJsFile(
+    '@web/js/cuaca-table.js',
+    ['depends' => [\yii\web\JqueryAsset::class]]
+);
+?>

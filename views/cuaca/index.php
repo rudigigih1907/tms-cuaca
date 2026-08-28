@@ -1,5 +1,6 @@
 <?php
 
+use app\assets\DataTableAsset;
 use yii\helpers\Html;
 use yii\widgets\Pjax;
 
@@ -9,12 +10,10 @@ use yii\widgets\Pjax;
 /** @var string|null $kabupatenId */
 /** @var string|null $kecamatanId */
 /** @var string|null $kelurahanId */
-/** @var string|null $tanggal */
 /** @var array $listProvinsi */
 /** @var array $listKabupaten */
 /** @var array $listKecamatan */
 /** @var array $listKelurahan */
-/** @var array $listTanggal */
 
 $this->title = 'Prakiraan Cuaca Berdasarkan Wilayah';
 
@@ -22,6 +21,8 @@ $provinsiId  = $provinsiId ?? null;
 $kabupatenId = $kabupatenId ?? null;
 $kecamatanId = $kecamatanId ?? null;
 $kelurahanId = $kelurahanId ?? null;
+
+DataTableAsset::register($this);
 ?>
 
 <div class="cuaca-index">
@@ -39,17 +40,15 @@ $kelurahanId = $kelurahanId ?? null;
         'kabupatenId'   => $kabupatenId ?? null,
         'kecamatanId'   => $kecamatanId ?? null,
         'kelurahanId'   => $kelurahanId ?? null,
-        'tanggal'       => $tanggal ?? null,
         'listProvinsi'  => $listProvinsi ?? [],
         'listKabupaten' => $listKabupaten ?? [],
         'listKecamatan' => $listKecamatan ?? [],
         'listKelurahan' => $listKelurahan ?? [],
-        'listTanggal'   => $listTanggal ?? [],
     ]) ?>
 
     <!-- TABEL GRIDVIEW HASIL PRAKIRAAN CUACA -->
     <?= $this->render('_table', [
-        'dataProvider' => $dataProvider,
+        'groupedDates' => $groupedDates,
         'kelurahanId'  => $kelurahanId ?? null,
     ]) ?>
 

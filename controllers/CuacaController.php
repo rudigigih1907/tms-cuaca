@@ -7,8 +7,8 @@ use app\models\CuacaGambar;
 use app\models\Wilayah;
 use kartik\mpdf\Pdf;
 use Yii;
-use yii\data\ActiveDataProvider;
 use yii\web\NotFoundHttpException;
+use yii\web\Response;
 use yii\web\UploadedFile;
 
 class CuacaController extends \yii\web\Controller
@@ -20,56 +20,36 @@ class CuacaController extends \yii\web\Controller
         $provinsiId  = $request->get('provinsi_id');
         $kabupatenId = $request->get('kabupaten_id');
         $kecamatanId = $request->get('kecamatan_id');
-        $kelurahanId = $request->get('kelurahan_id'); // Ini adalah kode adm4
-        $tanggal     = $request->get('tanggal');     // Filter Tanggal Terpilih (YYYY-MM-DD)
+        $kelurahanId = $request->get('kelurahan_id');
+        $tanggal     = $request->get('tanggal');
 
-        // Ambil daftar nama wilayah untuk dropdown
         $listProvinsi  = Wilayah::getProvinsi();
         $listKabupaten = Wilayah::getChildList($provinsiId, 5);
         $listKecamatan = Wilayah::getChildList($kabupatenId, 8);
         $listKelurahan = Wilayah::getChildList($kecamatanId, 13);
 
-        // Ambil daftar Tanggal Unik yang tersedia di DB khusus kelurahan terpilih
-        $listTanggal = [];
+        // Ambil daftar tanggal unik + jumlah records per tanggal
+        $groupedDates = [];
         if (!empty($kelurahanId)) {
-            $dates = Cuaca::find()
-                ->select(["DATE(local_datetime) AS tgl"])
-                ->where(['kode_adm4' => $kelurahanId])
-                ->groupBy(["DATE(local_datetime)"])
-                ->orderBy(['tgl' => SORT_ASC])
-                ->asArray()
-                ->all();
+            $query = Cuaca::find()
+                ->select([
+                    "DATE(local_datetime) AS tgl",
+                    "COUNT(id) AS total_jam"
+                ])
+                ->where(['kode_adm4' => $kelurahanId]);
 
-            foreach ($dates as $row) {
-                $tglRaw = $row['tgl'];
-                // Format label dropdown (Contoh: 06 Agustus 2026)
-                $listTanggal[$tglRaw] = Yii::$app->formatter->asDate($tglRaw, 'php:d F Y');
-            }
-        }
-
-        // GridView cuaca berdasarkan kelurahan yang dipilih (adm4)
-        $query = Cuaca::find();
-        if (!empty($kelurahanId)) {
-            $query->andWhere(['kode_adm4' => $kelurahanId]);
-            // Tambahkan filter jika tanggal dipilih
             if (!empty($tanggal)) {
                 $query->andWhere(['DATE(local_datetime)' => $tanggal]);
             }
-        } else {
-            // Jika belum pilih kelurahan, tampilkan kosong/default
-            $query->where('1=0');
+
+            $groupedDates = $query->groupBy(["DATE(local_datetime)"])
+                ->orderBy(['tgl' => SORT_DESC])
+                ->asArray()
+                ->all();
         }
 
-        $dataProvider = new ActiveDataProvider([
-            'query' => $query,
-            'pagination' => ['pageSize' => 24],
-            'sort' => [
-                'defaultOrder' => ['local_datetime' => SORT_ASC],
-            ],
-        ]);
-
         return $this->render('index', [
-            'dataProvider' => $dataProvider,
+            'groupedDates' => $groupedDates,
             'provinsiId'   => $provinsiId,
             'kabupatenId'  => $kabupatenId,
             'kecamatanId'  => $kecamatanId,
@@ -78,7 +58,6 @@ class CuacaController extends \yii\web\Controller
             'listKabupaten' => $listKabupaten,
             'listKecamatan' => $listKecamatan,
             'listKelurahan' => $listKelurahan,
-            'listTanggal'  => $listTanggal,
             'tanggal'      => $tanggal,
         ]);
     }
@@ -236,5 +215,56 @@ class CuacaController extends \yii\web\Controller
             return $model;
         }
         throw new NotFoundHttpException('Data tidak ditemukan.');
+    }
+
+    /**
+     * Action AJAX untuk Load Data Cuaca per Jam berdasarkan Tanggal & Kelurahan
+     */
+    public function actionGetDetailByDate()
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+
+        $kelurahanId = Yii::$app->request->get('kelurahan_id');
+        $tanggal     = Yii::$app->request->get('tanggal');
+
+        if (empty($kelurahanId) || empty($tanggal)) {
+            return ['status' => 'error', 'data' => []];
+        }
+
+        $models = Cuaca::find()
+            ->where(['kode_adm4' => $kelurahanId])
+            ->andWhere(['DATE(local_datetime)' => $tanggal])
+            ->orderBy(['local_datetime' => SORT_ASC])
+            ->all();
+
+        $data = [];
+        foreach ($models as $idx => $model) {
+            $totalFoto = count($model->galeri);
+            $badgeFoto = $totalFoto > 0
+                ? '<span class="badge bg-success">' . $totalFoto . ' Foto</span>'
+                : '<span class="badge bg-secondary">Kosong</span>';
+
+            $btnGaleri = \yii\helpers\Html::a('<i class="bi bi-images"></i> Lihat Galeri ' . $badgeFoto, ['view', 'id' => $model->id], [
+                'class' => 'btn btn-sm btn-outline-primary',
+                'data-pjax' => '0',
+            ]);
+
+            $data[] =
+                [
+                    'no'              => $idx + 1,
+                    'local_datetime'  => Yii::$app->formatter->asDate($model->local_datetime, 'php:H:i'),
+                    'kondisi_cuaca'   => $model->kondisi_cuaca ?? '-',
+                    'suhu'            => $model->suhu !== null ? $model->suhu . ' °C' : '-',
+                    'kelembapan'      => $model->kelembapan !== null ? $model->kelembapan . ' %' : '-',
+                    'kecepatan_angin' => $model->kecepatan_angin !== null ? $model->kecepatan_angin . ' km/j' : '-',
+                    'arah_angin'      => $model->arah_angin ?? '-',
+                    'action'          => $btnGaleri
+                ];
+        }
+
+        return [
+            'status' => 'success',
+            'data'   => $data
+        ];
     }
 }
