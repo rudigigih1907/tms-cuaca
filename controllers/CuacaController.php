@@ -155,9 +155,10 @@ class CuacaController extends \yii\web\Controller
     public function actionView(int $id): string
     {
         $model = $this->findModel($id);
-
+        $detailWilayah = Wilayah::getDetailWilayahByKode($model->kode_adm4);
         return $this->render('view', [
-            'model' => $model,
+            'model'         => $model,
+            'detailWilayah' => $detailWilayah,
         ]);
     }
 

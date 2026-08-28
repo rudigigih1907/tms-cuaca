@@ -25,10 +25,26 @@ $this->params['breadcrumbs'][] = $this->title;
             <?= DetailView::widget([
                 'model' => $model,
                 'attributes' => [
+                    [
+                        'label' => 'Provinsi',
+                        'value' => $detailWilayah['provinsi'],
+                    ],
+                    [
+                        'label' => 'Kabupaten / Kota',
+                        'value' => $detailWilayah['kabupaten'],
+                    ],
+                    [
+                        'label' => 'Kecamatan',
+                        'value' => $detailWilayah['kecamatan'],
+                    ],
+                    [
+                        'label' => 'Kelurahan / Desa',
+                        'value' => $detailWilayah['kelurahan'],
+                    ],
                     'kode_adm4',
                     [
                         'attribute' => 'local_datetime',
-                        'value' => Yii::$app->formatter->asDatetime($model->local_datetime, 'php:d F Y - H:i WIB'),
+                        'value' => Yii::$app->formatter->asDatetime($model->local_datetime, 'php:d F Y - H:i'). ' WIB',
                     ],
                     'kondisi_cuaca',
                     [
