@@ -35,7 +35,12 @@ WORKDIR /var/www/html
 COPY . .
 
 # Atur izin akses untuk folder runtime dan assets agar bisa ditulis oleh web server
-RUN chown -R www-data:www-data /var/www/html
+# RUN chown -R www-data:www-data /var/www/html
+RUN mkdir -p \
+    /var/www/html/runtime \
+    /var/www/html/web/assets \
+    /var/www/html/web/uploads \
+    && chown -R www-data:www-data /var/www/html
 
 EXPOSE 9000
 

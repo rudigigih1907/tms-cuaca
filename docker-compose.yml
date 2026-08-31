@@ -1,5 +1,4 @@
 services:
-  # Layanan PHP dan Aplikasi
   app:
     build:
       context: .
@@ -10,9 +9,13 @@ services:
       - TZ=${TIMEZONE}
     volumes:
       - .:/var/www/html
-    # Perintah di bawah ini memastikan izin folder diperbaiki setiap kali container start
+    labels:
+      - "ofelia.enabled=true"
+      - "ofelia.job-exec.sync-jakut.schedule=0 10 */6 * * *"
+      - "ofelia.job-exec.sync-jakut.command=sh -c 'php /var/www/html/yii cuaca/sync-jakut >> /var/www/html/runtime/logs/sync-jakut.log 2>&1'"
+      - "ofelia.job-exec.sync-jakut.no-overlap=true"
     entrypoint: >
-      sh -c "chown -R www-data:www-data /var/www/html/runtime /var/www/html/web/assets && docker-php-entrypoint php-fpm"
+      sh -c " mkdir -p /var/www/html/runtime /var/www/html/web/assets /var/www/html/web/uploads && chown -R www-data:www-data /var/www/html/runtime /var/www/html/web/assets /var/www/html/web/uploads && docker-php-entrypoint php-fpm "
     networks:
       - yii2_network
 
@@ -33,6 +36,11 @@ services:
       - db_data:/var/lib/mysql
     networks:
       - yii2_network
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u${DB_USER}", "-p${DB_PASSWORD}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   # Layanan Web Server (Nginx)
   nginx:
@@ -59,35 +67,61 @@ services:
     networks:
       - yii2_network
 
+  backup:
+    build:
+      context: ./docker/backup
+      dockerfile: Dockerfile
+    container_name: ${BACKUP_CONTAINER_NAME}
+    restart: unless-stopped
+    environment:
+      TZ: ${TIMEZONE}
+      MYSQL_HOST: ${DB_HOST}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS}
+    volumes:
+      - ./runtime/logs:/var/www/html/runtime/logs
+      # Source upload Yii2
+      - ./web/uploads:/data/uploads:ro
+      # Destination backup database
+      - ./backup/database:/backup/database
+      # Destination backup upload
+      - ./backup/uploads:/backup/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - yii2_network
+    labels:
+      - "ofelia.enabled=true"
+      - "ofelia.job-exec.backup-db.schedule=0 0 2 * * *"
+      - "ofelia.job-exec.backup-db.command=sh -c '/usr/local/bin/backup-db.sh >> /var/www/html/runtime/logs/backup-db.log 2>&1'"
+      - "ofelia.job-exec.backup-db.no-overlap=true"
+
+      - "ofelia.job-exec.backup-upload.schedule=0 30 2 * * *"
+      - "ofelia.job-exec.backup-upload.command=sh -c '/usr/local/bin/backup-upload.sh >> /var/www/html/runtime/logs/backup-upload.log 2>&1'"
+      - "ofelia.job-exec.backup-upload.no-overlap=true"
+
   scheduler:
     image: mcuadros/ofelia:0.3
     container_name: ${SCHEDULER_CONTAINER_NAME}
     restart: unless-stopped
     depends_on:
       - app
-    # Mengizinkan Ofelia berkomunikasi dengan Docker Socket
+      - backup
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
-      - ./runtime/logs:/etc/ofelia/logs
     environment:
       - TZ=${TIMEZONE}
     command: daemon --docker
     networks:
       - yii2_network
-    labels:
-      # Job 1: Sync BMKG Jakarta Utara 
-      ofelia.job-exec.sync_jakut.schedule: "0 10 0 * * *" # otomatis setiap hari jam 00:10
-      ofelia.job-exec.sync_jakut.container: ${APP_NAME}
-      ofelia.job-exec.sync_jakut.command: "php yii cuaca/sync-jakut"
-      # (Opsional) Kirim log output jika terjadi error
-      ofelia.job-exec.sync_jakut.no-overlap: "true"
-      ofelia.job-exec.sync_jakut.save-folder: "/etc/ofelia/logs"
 
 networks:
   yii2_network:
     driver: bridge
-
 volumes:
   db_data:
