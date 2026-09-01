@@ -4,11 +4,17 @@ namespace app\commands;
 
 use yii\console\Controller;
 use yii\console\ExitCode;
-use app\models\Cuaca;
-use app\models\Wilayah;
+use app\services\BmkgSyncService;
 
 class CuacaController extends Controller
 {
+    private BmkgSyncService $bmkgService;
+
+    public function init()
+    {
+        parent::init();
+        $this->bmkgService = new BmkgSyncService();
+    }
     /**
      * Perintah untuk menyinkronkan data cuaca BMKG.
      * Contoh penggunaan CLI: php yii cuaca/sync 31.72.02.1001
@@ -18,7 +24,7 @@ class CuacaController extends Controller
     {
         $this->stdout("Mulai menarik data cuaca BMKG untuk adm4: {$adm4}...\n");
 
-        $result = Cuaca::syncFromBmkg($adm4);
+        $result = $this->bmkgService->syncByAdm4($adm4);
 
         if ($result['success']) {
             $this->stdout("[SUKSES] " . $result['message'] . "\n");
@@ -41,9 +47,9 @@ class CuacaController extends Controller
             '32.73.01.1001', // Kelurahan 3
         ];
 
-        foreach ($daftarAdm4 as $adm4) {
-            $result = Cuaca::syncFromBmkg($adm4);
-            $this->stdout($result['message'] . "\n");
+        $results = $this->bmkgService->syncMultiple($daftarAdm4);
+        foreach ($results as $adm4 => $res) {
+            $this->stdout("Adm4 {$adm4}: " . $res['message'] . "\n");
         }
 
         return ExitCode::OK;
@@ -57,34 +63,18 @@ class CuacaController extends Controller
     {
         $this->stdout("[" . date('Y-m-d H:i:s') . "] Memulai sinkronisasi BMKG Jakarta Utara...\n");
 
-        // Ambil semua kelurahan Jakarta Utara (Kode Prefix 31.72)
-        $daftarKelurahanJakut = Wilayah::find()
-            ->select(['kode'])
-            ->where(['CHAR_LENGTH(kode)' => 13])
-            ->andWhere(['like', 'kode', '31.72.%', false])
-            ->column();
-
-        if (empty($daftarKelurahanJakut)) {
-            $this->stderr("Tidak ada kode kelurahan Jakarta Utara yang ditemukan.\n");
-            return ExitCode::DATAERR;
-        }
-
-        $sukses = 0;
-        $gagal = 0;
-
-        foreach ($daftarKelurahanJakut as $adm4) {
-            $result = Cuaca::syncFromBmkg($adm4);
-
-            if ($result['success']) {
-                $sukses++;
-                $this->stdout("[OK] Adm4 {$adm4}: {$result['message']}\n");
+        // Callback logger untuk menampilkan output real-time di console
+        $logger = function ($msg, $type) {
+            if ($type === 'error') {
+                $this->stderr($msg);
             } else {
-                $gagal++;
-                $this->stderr("[ERROR] Adm4 {$adm4}: {$result['message']}\n");
+                $this->stdout($msg);
             }
-            usleep(5000000);
-        }
-        $this->stdout("Sinkronisasi Selesai. Total Kelurahan: " . count($daftarKelurahanJakut) . " (Sukses: {$sukses}, Gagal: {$gagal})\n");
-        return ExitCode::OK;
+        };
+
+        $summary = $this->bmkgService->syncJakartaUtara($logger);
+
+        $this->stdout($summary['message'] . "\n");
+        return $summary['success'] ? ExitCode::OK : ExitCode::DATAERR;
     }
 }

@@ -5,6 +5,7 @@ namespace app\controllers;
 use app\models\Cuaca;
 use app\models\CuacaGambar;
 use app\models\Wilayah;
+use app\services\BmkgSyncService;
 use kartik\mpdf\Pdf;
 use Yii;
 use yii\web\NotFoundHttpException;
@@ -13,6 +14,15 @@ use yii\web\UploadedFile;
 
 class CuacaController extends \yii\web\Controller
 {
+    private BmkgSyncService $bmkgService;
+
+    // Inject Service via constructor / inisialisasi
+    public function init()
+    {
+        parent::init();
+        $this->bmkgService = new BmkgSyncService();
+    }
+
     public function actionIndex()
     {
         $request = Yii::$app->request;
@@ -71,16 +81,12 @@ class CuacaController extends \yii\web\Controller
     /**
      * Mengambil & menyimpan data langsung dari API BMKG berdasarkan adm4.
      */
-    public function actionSync(): \yii\web\Response
+    public function actionSync(): Response
     {
         $adm4 = Yii::$app->request->post('adm4');
 
-        if (empty($adm4)) {
-            Yii::$app->session->setFlash('error', 'Kode Wilayah (adm4) harus diisi!');
-            return $this->redirect(['index']);
-        }
-
-        $result = Cuaca::syncFromBmkg($adm4);
+        // Panggil Service
+        $result = $this->bmkgService->syncByAdm4($adm4 ?? '');
 
         if ($result['success']) {
             Yii::$app->session->setFlash('success', $result['message']);
