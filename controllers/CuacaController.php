@@ -8,6 +8,8 @@ use app\models\Wilayah;
 use app\services\BmkgSyncService;
 use kartik\mpdf\Pdf;
 use Yii;
+use yii\filters\AccessControl;
+use yii\filters\VerbFilter;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\web\UploadedFile;
@@ -21,6 +23,33 @@ class CuacaController extends \yii\web\Controller
     {
         parent::init();
         $this->bmkgService = new BmkgSyncService();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function behaviors()
+    {
+        return array_merge(
+            parent::behaviors(),
+            [
+                'verbs' => [
+                    'class' => VerbFilter::class,
+                    'actions' => [
+                        'delete' => ['POST'],
+                    ],
+                ],
+                'access' => [
+                    'class' => AccessControl::class,
+                    'rules' => [
+                        [
+                            'allow' => true,
+                            'roles' => ['@'],
+                        ],
+                    ],
+                ],
+            ]
+        );
     }
 
     public function actionIndex()

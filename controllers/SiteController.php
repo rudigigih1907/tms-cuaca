@@ -7,6 +7,7 @@ namespace app\controllers;
 use Yii;
 use app\models\ContactForm;
 use app\models\LoginForm;
+use app\models\RegisterForm;
 use yii\captcha\CaptchaAction;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
@@ -36,12 +37,17 @@ class SiteController extends Controller
         return [
             'access' => [
                 'class' => AccessControl::class,
-                'only' => ['logout'],
+                'only' => ['logout', 'index', 'register'],
                 'rules' => [
                     [
-                        'actions' => ['logout'],
+                        'actions' => ['register'],
                         'allow' => true,
-                        'roles' => ['@'],
+                        'roles' => ['?'], // Guest (belum login)
+                    ],
+                    [
+                        'actions' => ['logout', 'index'],
+                        'allow' => true,
+                        'roles' => ['@'], // User yang sudah login
                     ],
                 ],
             ],
@@ -151,5 +157,19 @@ class SiteController extends Controller
     public function actionAbout(): string
     {
         return $this->render('about');
+    }
+
+    public function actionRegister()
+    {
+        $model = new RegisterForm();
+
+        if ($model->load(Yii::$app->request->post()) && $model->register()) {
+            Yii::$app->session->setFlash('success', 'Registrasi berhasil! Silakan login.');
+            return $this->redirect(['site/login']);
+        }
+
+        return $this->render('register', [
+            'model' => $model,
+        ]);
     }
 }
