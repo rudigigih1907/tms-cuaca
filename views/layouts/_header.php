@@ -28,7 +28,7 @@ $items = [
     ],
     [
         'label' => 'Logout (' . Html::encode(Yii::$app->user->identity?->username ?? '') . ')',
-        'url' => ['/site/logout'],
+        'url' => ['/auth/logout'],
         'linkOptions' => [
             'data-method' => 'post',
             'class' => 'nav-link logout',

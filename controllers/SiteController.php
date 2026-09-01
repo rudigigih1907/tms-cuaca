@@ -6,8 +6,6 @@ namespace app\controllers;
 
 use Yii;
 use app\models\ContactForm;
-use app\models\LoginForm;
-use app\models\RegisterForm;
 use yii\captcha\CaptchaAction;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
@@ -88,40 +86,6 @@ class SiteController extends Controller
     }
 
     /**
-     * Login action.
-     *
-     * @return Response|string
-     */
-    public function actionLogin(): Response|string
-    {
-        if (!Yii::$app->user->isGuest) {
-            return $this->goHome();
-        }
-
-        $model = new LoginForm($this->security);
-
-        if ($model->load($this->request->post()) && $model->login()) {
-            return $this->goBack();
-        }
-
-        $model->password = '';
-
-        return $this->render('login', ['model' => $model]);
-    }
-
-    /**
-     * Logout action.
-     *
-     * @return Response
-     */
-    public function actionLogout(): Response
-    {
-        Yii::$app->user->logout();
-
-        return $this->goHome();
-    }
-
-    /**
      * Displays contact page.
      *
      * @return Response|string
@@ -157,19 +121,5 @@ class SiteController extends Controller
     public function actionAbout(): string
     {
         return $this->render('about');
-    }
-
-    public function actionRegister()
-    {
-        $model = new RegisterForm();
-
-        if ($model->load(Yii::$app->request->post()) && $model->register()) {
-            Yii::$app->session->setFlash('success', 'Registrasi berhasil! Silakan login.');
-            return $this->redirect(['site/login']);
-        }
-
-        return $this->render('register', [
-            'model' => $model,
-        ]);
     }
 }
