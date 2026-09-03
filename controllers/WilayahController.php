@@ -35,7 +35,7 @@ class WilayahController extends Controller
                     'rules' => [
                         [
                             'allow' => true,
-                            'roles' => ['@'],
+                            'roles' => ['accessWilayah'], // HANYA role yang punya permission accessWilayah (Admin)
                         ],
                     ],
                 ],

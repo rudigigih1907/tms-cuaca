@@ -9,6 +9,13 @@ use app\models\LoginForm;
 
 class AuthService
 {
+    private RbacService $rbacService;
+
+    public function __construct(?RbacService $rbacService = null)
+    {
+        $this->rbacService = $rbacService ?? new RbacService();
+    }
+
     /**
      * Memproses registrasi user baru
      */
@@ -18,19 +25,33 @@ class AuthService
             return null;
         }
 
-        $user = new User();
-        $user->username = $form->username;
-        $user->email = $form->email;
-        $user->password_hash = Yii::$app->security->generatePasswordHash($form->password);
-        $user->auth_key = Yii::$app->security->generateRandomString();
-        $user->status = User::STATUS_ACTIVE;
-        $user->created_at = time();
-        $user->updated_at = time();
+        $transaction = Yii::$app->db->beginTransaction();
 
-        if ($user->save()) {
+        try {
+            $user = new User();
+            $user->username = $form->username;
+            $user->email = $form->email;
+            $user->password_hash = Yii::$app->security->generatePasswordHash($form->password);
+            $user->auth_key = Yii::$app->security->generateRandomString();
+            $user->status = User::STATUS_ACTIVE;
+            $user->created_at = time();
+            $user->updated_at = time();
+
+            if (!$user->save()) {
+                $transaction->rollBack();
+                return null;
+            }
+
+            // Assign Role 'user' default
+            $this->rbacService->assignRole($user->id, 'user');
+
+            $transaction->commit();
             return $user;
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            Yii::error("Gagal registrasi user: " . $e->getMessage(), __METHOD__);
+            return null;
         }
-        return null;
     }
 
     /**
