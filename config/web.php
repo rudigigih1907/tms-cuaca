@@ -61,10 +61,32 @@ $config = [
             'timeFormat' => $_ENV['TIMEFORMAT'],
             'defaultTimeZone' => $_ENV['DEFAULTTIMEZONE'], // Zona waktu input/database
             'timeZone' => $_ENV['TIMEZONE'],       // Zona waktu tampilan
+            'locale' => $_ENV['LOCALE'],
+        ],
+        'authManager' => [
+            'class' => 'yii\rbac\DbManager', // Menggunakan database untuk menyimpan Role & Permission
         ],
     ],
     'params' => $params,
-    'timeZone' => 'Asia/Jakarta'
+    'timeZone' => 'Asia/Jakarta',
+
+    'modules' => [
+        'admin' => [
+            'class' => 'mdm\admin\Module',
+            'layout' => '@app/views/layouts/main', // Pilihan layout: 'left-menu', 'right-menu', 'top-menu'
+        ],
+    ],
+    'as access' => [
+        'class' => 'mdm\admin\components\AccessControl',
+        'allowActions' => [
+            // 'site/*',      // Bebaskan action login/logout bawaan site controller
+            // 'admin/*',     // SEMENTARA BEBASKAN agar Anda bisa masuk & mensetting permission pertama kali
+            // 'auth/logout',
+            // 'gii/*',       // Opsional (untuk development)
+            // 'debug/*',     // Opsional (untuk development)
+            'auth/*'
+        ],
+    ],
 ];
 
 if (YII_ENV_DEV) {

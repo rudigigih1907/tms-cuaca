@@ -34,6 +34,9 @@ $config = [
             'defaultTimeZone' => $_ENV['DEFAULTTIMEZONE'], // Zona waktu input/database
             'timeZone' => $_ENV['TIMEZONE'],       // Zona waktu tampilan
         ],
+        'authManager' => [
+            'class' => 'yii\rbac\DbManager', // Menggunakan database untuk menyimpan Role & Permission
+        ],
     ],
     'params' => $params,
     'timeZone' => 'Asia/Jakarta',
