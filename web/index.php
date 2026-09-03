@@ -1,6 +1,8 @@
 <?php
 
 declare(strict_types=1);
+// Tambahkan di baris paling atas web/index.php
+error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
 
 // comment out the following two lines when deployed to production
 // defined('YII_DEBUG') or define('YII_DEBUG', true);
