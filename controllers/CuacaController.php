@@ -46,7 +46,7 @@ class CuacaController extends \yii\web\Controller
                     'rules' => [
                         [
                             'allow' => true,
-                            'roles' => ['@'],
+                            'roles' => ['accessCuaca'], // Boleh diakses role yang punya permission accessCuaca (User & Admin)
                         ],
                     ],
                 ],
