@@ -129,17 +129,17 @@ class CuacaController extends \yii\web\Controller
     }
 
     public function actionExportPdf(string $kelurahan_id, string $tanggal)
-{
-    // Cukup pass 2 parameter utama
-    $pdf = $this->exportPdfService->generatePdf($kelurahan_id, $tanggal);
+    {
+        // Cukup pass 2 parameter utama
+        $pdf = $this->exportPdfService->generatePdf($kelurahan_id, $tanggal);
 
-    if (!$pdf) {
-        Yii::$app->session->setFlash('error', 'Tidak ada data cuaca untuk tanggal tersebut.');
-        return $this->redirect(['index', 'kelurahan_id' => $kelurahan_id, 'tanggal' => $tanggal]);
+        if (!$pdf) {
+            Yii::$app->session->setFlash('error', 'Tidak ada data cuaca untuk tanggal tersebut.');
+            return $this->redirect(['index', 'kelurahan_id' => $kelurahan_id, 'tanggal' => $tanggal]);
+        }
+
+        return $pdf->render();
     }
-
-    return $pdf->render();
-}
 
     /**
      * Halaman View Terpisah untuk Menampilkan Galeri Gambar
