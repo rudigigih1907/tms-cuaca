@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace app\controllers;
 
+use app\models\ChangePasswordForm;
 use Yii;
 use app\models\ContactForm;
 use yii\captcha\CaptchaAction;
@@ -35,7 +36,7 @@ class SiteController extends Controller
         return [
             'access' => [
                 'class' => AccessControl::class,
-                'only' => ['logout', 'index', 'register'],
+                'only' => ['logout', 'index', 'register', 'change-password'],
                 'rules' => [
                     [
                         'actions' => ['register'],
@@ -43,7 +44,7 @@ class SiteController extends Controller
                         'roles' => ['?'], // Guest (belum login)
                     ],
                     [
-                        'actions' => ['logout', 'index'],
+                        'actions' => ['logout', 'index', 'change-password'],
                         'allow' => true,
                         'roles' => ['@'], // User yang sudah login
                     ],
@@ -121,5 +122,21 @@ class SiteController extends Controller
     public function actionAbout(): string
     {
         return $this->render('about');
+    }
+
+    public function actionChangePassword()
+    {
+        $user = Yii::$app->user->identity;
+
+        $model = new ChangePasswordForm($user);
+
+        if ($model->load(Yii::$app->request->post()) && $model->changePassword()) {
+            Yii::$app->session->setFlash('success', 'Password Anda berhasil diperbarui.');
+            return $this->refresh();
+        }
+
+        return $this->render('change-password', [
+            'model' => $model,
+        ]);
     }
 }

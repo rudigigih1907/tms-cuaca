@@ -2,7 +2,6 @@
 
 namespace app\controllers;
 
-use app\models\ChangePasswordForm;
 use Yii;
 use yii\web\Controller;
 use app\models\UserForm;
@@ -180,21 +179,5 @@ class UserController extends Controller
         }
 
         return $this->redirect(Yii::$app->request->referrer ?: ['index']);
-    }
-
-    public function actionChangePassword()
-    {
-        $user = Yii::$app->user->identity;
-
-        $model = new ChangePasswordForm($user);
-
-        if ($model->load(Yii::$app->request->post()) && $model->changePassword()) {
-            Yii::$app->session->setFlash('success', 'Password Anda berhasil diperbarui.');
-            return $this->refresh();
-        }
-
-        return $this->render('change-password', [
-            'model' => $model,
-        ]);
     }
 }

@@ -28,7 +28,7 @@ $items = [
     ],
     [
         'label' => 'Ganti Password',
-        'url' => ['/user/change-password'],
+        'url' => ['/site/change-password'],
         'visible' => !Yii::$app->user->isGuest,
     ],
     [
