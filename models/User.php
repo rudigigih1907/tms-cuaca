@@ -69,4 +69,22 @@ class User extends ActiveRecord implements IdentityInterface
     {
         return Yii::$app->security->validatePassword($password, $this->password_hash);
     }
+
+    /**
+     * Generate password hash dari plain text password dan menyimpannya ke password_hash
+     *
+     * @param string $password
+     */
+    public function setPassword(string $password): void
+    {
+        $this->password_hash = Yii::$app->security->generatePasswordHash($password);
+    }
+
+    /**
+     * Generate "remember me" authentication key
+     */
+    public function generateAuthKey(): void
+    {
+        $this->auth_key = Yii::$app->security->generateRandomString();
+    }
 }
