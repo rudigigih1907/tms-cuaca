@@ -27,6 +27,11 @@ $items = [
         'visible' => Yii::$app->user->isGuest,
     ],
     [
+        'label' => 'Ganti Password',
+        'url' => ['/user/change-password'],
+        'visible' => !Yii::$app->user->isGuest,
+    ],
+    [
         'label' => 'Logout (' . Html::encode(Yii::$app->user->identity?->username ?? '') . ')',
         'url' => ['/auth/logout'],
         'linkOptions' => [
