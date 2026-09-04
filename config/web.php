@@ -6,6 +6,7 @@ $db = require __DIR__ . '/db.php';
 $config = [
     'id' => 'basic',
     'basePath' => dirname(__DIR__),
+    'name' => strtoupper(str_replace('-', ' ', $_ENV['APP_NAME'] ?? Yii::$app->name)),
     'bootstrap' => ['log'],
     'container' => [
         'singletons' => [
