@@ -66,9 +66,16 @@ class AuthController extends Controller
 
     public function actionLogin()
     {
+        if (!Yii::$app->user->isGuest) {
+            return $this->redirect(['site/dashboard']);
+        }
+
         $model = new LoginForm();
         if ($model->load(Yii::$app->request->post()) && $this->authService->login($model)) {
-            return $this->goBack();
+            if (Yii::$app->user->can('admin')) {
+                return $this->redirect(['/user/index']);
+            }
+            return $this->redirect(['site/dashboard']);
         }
 
         $model->password = '';

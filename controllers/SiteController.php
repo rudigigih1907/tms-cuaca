@@ -44,7 +44,7 @@ class SiteController extends Controller
                         'roles' => ['?'], // Guest (belum login)
                     ],
                     [
-                        'actions' => ['logout', 'index', 'change-password'],
+                        'actions' => ['logout', 'index', 'change-password', 'dashboard'],
                         'allow' => true,
                         'roles' => ['@'], // User yang sudah login
                     ],
@@ -137,6 +137,24 @@ class SiteController extends Controller
 
         return $this->render('change-password', [
             'model' => $model,
+        ]);
+    }
+
+    /**
+     * Halaman Dashboard User
+     */
+    public function actionDashboard()
+    {
+        /** @var \app\models\User $user */
+        $user = Yii::$app->user->identity;
+
+        // Ambil role user aktif
+        $userRoles = Yii::$app->authManager->getRolesByUser($user->id);
+        $roleName = !empty($userRoles) ? reset($userRoles)->name : 'User';
+
+        return $this->render('dashboard', [
+            'user' => $user,
+            'roleName' => $roleName,
         ]);
     }
 }
