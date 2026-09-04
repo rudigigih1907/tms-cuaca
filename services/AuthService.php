@@ -31,8 +31,8 @@ class AuthService
             $user = new User();
             $user->username = $form->username;
             $user->email = $form->email;
-            $user->password_hash = Yii::$app->security->generatePasswordHash($form->password);
-            $user->auth_key = Yii::$app->security->generateRandomString();
+            $user->setPassword($form->password);
+            $user->generateAuthKey();
             $user->status = User::STATUS_ACTIVE;
             $user->created_at = time();
             $user->updated_at = time();
