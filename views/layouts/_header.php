@@ -23,7 +23,7 @@ $items = [
     ],
     [
         'label' => 'Login',
-        'url' => ['/site/login'],
+        'url' => ['/auth/login'],
         'visible' => Yii::$app->user->isGuest,
     ],
     [
