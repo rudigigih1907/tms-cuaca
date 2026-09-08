@@ -67,16 +67,14 @@ class PdfBuilder
     private function getDefaultCss(): string
     {
         return '
-            body { font-family: sans-serif; font-size: 10pt; color: #333; }
-            .header-title { text-align: center; font-size: 16pt; font-weight: bold; text-transform: uppercase; margin-bottom: 4px; }
-            .header-sub { text-align: center; font-size: 10pt; color: #666; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; }
-            .meta-table { width: 100%; margin-bottom: 15px; border-collapse: collapse; }
-            .meta-table td { padding: 4px 8px; vertical-align: top; }
-            .table-data { width: 100%; border-collapse: collapse; margin-top: 10px; }
-            .table-data th { background-color: #007bff; color: #ffffff; border: 1px solid #0056b3; padding: 8px; text-align: center; font-weight: bold; }
-            .table-data td { border: 1px solid #cccccc; padding: 7px; text-align: center; }
-            .table-data tr:nth-child(even) { background-color: #f9f9f9; }
-            .footer-text { margin-top: 30px; text-align: right; font-size: 9pt; color: #777; }
-        ';
+        body { font-family: sans-serif; font-size: 9.5pt; color: #333; }
+        .meta-table { width: 100%; margin-bottom: 15px; border-collapse: collapse; }
+        .meta-table td { padding: 3px 5px; vertical-align: top; font-size: 9.5pt; }
+        .table-data { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .table-data th { background-color: #0056b3; color: #ffffff; border: 1px solid #004085; padding: 7px; font-weight: bold; font-size: 9pt; }
+        .table-data td { border: 1px solid #cccccc; padding: 6px; font-size: 9pt; }
+        .table-data tr:nth-child(even) { background-color: #f8f9fa; }
+        .footer-text { margin-top: 25px; text-align: right; font-size: 8.5pt; color: #666; }
+    ';
     }
 }

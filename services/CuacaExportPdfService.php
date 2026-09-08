@@ -23,21 +23,28 @@ class CuacaExportPdfService
             return null;
         }
 
-        $kelurahanModel = Wilayah::findOne(['kode' => $kelurahanId]);
-        $namaKelurahan = $kelurahanModel ? $kelurahanModel->nama : $kelurahanId;
+        $detailWilayah = Wilayah::getDetailWilayahByKode($kelurahanId);
 
-        // Render HTML View
+        $logoPath = Yii::getAlias('@webroot/images/logo2.png');
+        $sourceUrl = 'https://data.bmkg.go.id/prakiraan-cuaca/';
+        $namaPerusahaan = 'PT. Pelayaran Tresnamuda Sejati';
+
         $targetView = $viewPath ?? '@app/views/cuaca/_report_pdf.php';
         $content = Yii::$app->view->renderFile($targetView, [
             'dataCuaca'     => $dataCuaca,
-            'namaKelurahan' => $namaKelurahan,
+            'detailWilayah' => $detailWilayah,
             'kodeAdm4'      => $kelurahanId,
             'tanggal'       => $tanggal,
+            'logoPath'      => $logoPath,
+            'sourceUrl'     => $sourceUrl,
+            'namaPerusahaan' => $namaPerusahaan,
         ]);
 
-        // Gunakan PdfBuilder untuk membuat instansiasi PDF
+        $namaKelurahan = $detailWilayah['kelurahan'] ?? $kelurahanId;
+
         return PdfBuilder::create()
             ->setContent($content)
+            ->setTitle("Laporan Cuaca - {$namaPerusahaan} - {$namaKelurahan} ({$tanggal})")
             ->setTitle("Laporan Cuaca - {$namaKelurahan} ({$tanggal})")
             ->setHeader('LAPORAN PRAKIRAAN CUACA BMKG||Tgl Cetak: ' . date('d/m/Y H:i'))
             ->build();
