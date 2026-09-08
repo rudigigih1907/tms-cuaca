@@ -7,6 +7,7 @@ $config = [
     'id' => 'basic',
     'basePath' => dirname(__DIR__),
     'name' => strtoupper(str_replace('-', ' ', $_ENV['APP_NAME'] ?? Yii::$app->name)),
+    'defaultRoute' => 'site/dashboard',
     'bootstrap' => ['log'],
     'container' => [
         'singletons' => [
