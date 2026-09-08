@@ -1,13 +1,14 @@
 <?php
 
 use yii\helpers\Html;
+use yii\helpers\Url;
 use app\models\User;
 
 /** @var yii\web\View $this */
 /** @var app\models\User $user */
 /** @var string $roleName */
 
-$this->title = 'Dashboard Pengguna';
+$this->title = 'Dashboard';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 
@@ -18,7 +19,7 @@ $this->params['breadcrumbs'][] = $this->title;
             <h1 class="display-6 fw-bold">Selamat Datang, <?= Html::encode($user->username) ?>! 👋</h1>
             <p class="col-md-8 fs-6 mb-0 text-white-50">
                 Anda masuk sebagai role <span class="badge bg-light text-primary fw-semibold fs-6 ms-1"><?= Html::encode(strtoupper($roleName)) ?></span>.
-                Gunakan panel ini untuk mengelola akun Anda.
+                Gunakan panel ini untuk mengelola akun dan mengakses layanan data.
             </p>
         </div>
     </div>
@@ -78,7 +79,19 @@ $this->params['breadcrumbs'][] = $this->title;
                             </div>
                         </div>
 
-                        <!-- Tombol Khusus Admin (Kondisional) -->
+                        <div class="col-sm-6">
+                            <div class="p-3 border rounded-3 h-100 d-flex flex-column justify-content-between">
+                                <div>
+                                    <div class="text-info mb-2">
+                                        <i class="bi bi-cloud-sun fs-3"></i>
+                                    </div>
+                                    <h6 class="fw-bold">Prakiraan Cuaca</h6>
+                                    <p class="small text-muted mb-3">Lihat estimasi dan parameter cuaca BMKG hingga tingkat desa/kelurahan.</p>
+                                </div>
+                                <?= Html::a('Lihat Cuaca', ['/cuaca/index'], ['class' => 'btn btn-sm btn-outline-info fw-semibold w-100']) ?>
+                            </div>
+                        </div>
+
                         <?php if (Yii::$app->user->can('admin')): ?>
                             <div class="col-sm-6">
                                 <div class="p-3 border rounded-3 h-100 d-flex flex-column justify-content-between">
@@ -90,6 +103,19 @@ $this->params['breadcrumbs'][] = $this->title;
                                         <p class="small text-muted mb-3">Kelola pengguna, tambah akun baru, dan atur hak akses RBAC.</p>
                                     </div>
                                     <?= Html::a('Buka User Management', ['/user/index'], ['class' => 'btn btn-sm btn-outline-danger fw-semibold w-100']) ?>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-6">
+                                <div class="p-3 border rounded-3 h-100 d-flex flex-column justify-content-between">
+                                    <div>
+                                        <div class="text-success mb-2">
+                                            <i class="bi bi-geo-alt fs-3"></i>
+                                        </div>
+                                        <h6 class="fw-bold">Data Wilayah</h6>
+                                        <p class="small text-muted mb-3">Kelola dan lihat hirarki data administratif tingkat 4 (Provinsi-Desa).</p>
+                                    </div>
+                                    <?= Html::a('Kelola Data Wilayah', ['/wilayah/index'], ['class' => 'btn btn-sm btn-outline-success fw-semibold w-100']) ?>
                                 </div>
                             </div>
                         <?php endif; ?>
