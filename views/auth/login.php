@@ -10,8 +10,8 @@ use yii\bootstrap5\Html;
 
 $this->title = 'Login to your account';
 $this->params['breadcrumbs'][] = $this->title;
-$this->params['meta_description'] = 'Log in to access your Yii2 application account.';
-$this->params['meta_keywords'] = 'yii, yii2, login, sign in, authentication';
+$this->params['meta_description'] = 'Log in to access your application account.';
+$this->params['meta_keywords'] = 'login, sign in, authentication';
 $htmlIcon = <<<HTML
 {label}<div class="input-group"><span class="input-group-text" aria-hidden="true">%s</span>{input}</div>{error}{hint}
 HTML;
@@ -24,22 +24,23 @@ $labelOptions = ['class' => 'form-label fw-semibold small'];
             <!-- Brand panel -->
             <div class="col-md-5 d-none d-md-flex login-brand-panel text-white">
                 <div class="d-flex flex-column justify-content-between p-4 p-lg-5 w-100">
-                    <div>
+                    <!-- Ditambahkan class text-center untuk meratakan logo ke tengah -->
+                    <div class="text-center">
                         <?= Html::img(
-                            Yii::getAlias('@web/images/yii3_full_white_for_dark.svg'),
+                            Yii::getAlias('@web/images/logo2.png'),
                             [
-                                'alt' => 'Yii Framework',
-                                'class' => 'mb-4',
-                                'height' => 40,
+                                'alt' => 'Logo',
+                                'class' => 'mb-4 img-fluid',
+                                'height' => 60,
                             ],
                         ) ?>
                     </div>
                     <div>
                         <h2 class="fw-bold mb-3 login-brand-title">
-                            Welcome<br>Back
+                            PT. Pelayaran<br>Tresnamuda Sejati
                         </h2>
                         <p class="opacity-75 mb-0 login-brand-text">
-                            Log in to access your Yii2 application and manage your account.
+                            Log in to access your application and manage your account.
                         </p>
                     </div>
                 </div>
@@ -49,14 +50,14 @@ $labelOptions = ['class' => 'form-label fw-semibold small'];
             <div class="col-md-7">
                 <div class="p-4 p-lg-5">
                     <div class="text-center mb-4">
-                        <!-- Mobile-only logo -->
-                        <div class="d-md-none mb-3">
+                        <!-- Mobile-only logo (sudah dalam text-center) -->
+                        <div class="d-md-none mb-3 text-center">
                             <?= Html::img(
-                                Yii::getAlias('@web/images/yii3_full_black_for_light.svg'),
+                                Yii::getAlias('@web/images/logo-tms.png'),
                                 [
-                                    'alt' => 'Yii Framework',
-                                    'class' => 'login-mobile-logo',
-                                    'height' => 36,
+                                    'alt' => 'Logo',
+                                    'class' => 'login-mobile-logo img-fluid',
+                                    'height' => 50,
                                 ],
                             ) ?>
                         </div>
@@ -102,14 +103,7 @@ $labelOptions = ['class' => 'form-label fw-semibold small'];
                             ],
                         ) ?>
                     </div>
-
                     <?php ActiveForm::end(); ?>
-
-                    <div class="text-body-secondary text-center mt-3 small">
-                        You may login with <strong>admin/admin</strong> or <strong>demo/demo</strong>.<br>
-                        To modify the username/password, check <code>app\models\User::$users</code>.
-                    </div>
-
                 </div>
             </div>
 
