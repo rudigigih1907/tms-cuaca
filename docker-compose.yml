@@ -44,7 +44,7 @@ services:
 
   # Layanan Web Server (Nginx)
   nginx:
-    image: nginx:alpine
+    image: nginx:alpine3.24
     container_name: ${NGINX_CONTAINER_NAME}
     restart: always
     ports:
