@@ -121,7 +121,13 @@ class SiteController extends Controller
      */
     public function actionAbout(): string
     {
-        return $this->render('about');
+        return $this->render('about', [
+            'developerName' => 'Rudi Gigih Prabowo',
+            'organization' => 'ITJKT',
+            'repoWilayah' => 'https://github.com/cahyadsn/wilayah',
+            'apiSource' => 'https://data.bmkg.go.id/prakiraan-cuaca/',
+            'apiVersion' => 'Administrasi Tingkat 4 (Kelurahan/Desa)',
+        ]);
     }
 
     public function actionChangePassword()
