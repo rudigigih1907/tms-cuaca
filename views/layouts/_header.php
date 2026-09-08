@@ -11,10 +11,6 @@ $username = Html::encode(Yii::$app->user->identity?->username ?? '');
 
 $items = [
     [
-        'label' => 'Home',
-        'url' => ['/site/index'],
-    ],
-    [
         'label' => 'Dashboard',
         'url' => ['/site/dashboard'],
         'visible' => !Yii::$app->user->isGuest,
@@ -25,30 +21,13 @@ $items = [
         'visible' => !Yii::$app->user->isGuest && Yii::$app->user->can('admin'),
     ],
     [
-        'label' => 'About',
-        'url' => ['/site/about'],
-    ],
-    [
-        'label' => 'Contact',
-        'url' => ['/site/contact'],
-    ],
-    [
-        'label' => 'Login',
-        'url' => ['/auth/login'],
-        'visible' => Yii::$app->user->isGuest,
-    ],
-    [
-        'label' => 'Ganti Password',
-        'url' => ['/site/change-password'],
+        'label' => 'Cuaca',
+        'url' => ['/cuaca/index'],
         'visible' => !Yii::$app->user->isGuest,
     ],
     [
-        'label' => 'Logout (' . Html::encode(Yii::$app->user->identity?->username ?? '') . ')',
-        'url' => ['/auth/logout'],
-        'linkOptions' => [
-            'data-method' => 'post',
-            'class' => 'nav-link logout',
-        ],
+        'label' => 'About',
+        'url' => ['/site/about'],
         'visible' => !Yii::$app->user->isGuest,
     ],
 ];
@@ -59,7 +38,7 @@ $rightItems = [];
 if (Yii::$app->user->isGuest) {
     $rightItems[] = [
         'label' => '<i class="bi bi-box-arrow-in-right me-1"></i> Login',
-        'url' => ['/site/login'], // Sesuaikan jika menggunakan '/auth/login'
+        'url' => ['/auth/login'],
     ];
 } else {
     $rightItems[] = [
@@ -76,7 +55,7 @@ if (Yii::$app->user->isGuest) {
             '<div class="dropdown-divider"></div>',
             [
                 'label' => '<i class="bi bi-box-arrow-right me-2 text-danger"></i> Logout',
-                'url' => ['/site/logout'], // Sesuaikan jika menggunakan '/auth/logout'
+                'url' => ['/auth/logout'],
                 'linkOptions' => [
                     'data-method' => 'post',
                     'class' => 'dropdown-item text-danger',
@@ -90,7 +69,7 @@ if (Yii::$app->user->isGuest) {
 <header id="header">
     <?php NavBar::begin([
         'brandLabel' => Yii::$app->name,
-        'brandUrl' => Yii::$app->homeUrl,
+        'brandUrl' => ['site/dashboard'],
         'options' => ['class' => 'navbar-expand-md navbar-dark bg-dark fixed-top'],
     ]) ?>
 
